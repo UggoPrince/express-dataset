@@ -1,6 +1,7 @@
 var chai = require('chai');
 var chaiHttp = require('chai-http');
 var server = require('../app');
+const SqliteDb = require('../database/Sqlite3DB');
 var should = chai.should();
 var expect = chai.expect;
 chai.use(chaiHttp);
@@ -13,9 +14,13 @@ const dir = './test/data/';
 const testFolder = './test/data';
 let testCaseNames = fs.readFileSync(dir + 'description.txt', 'utf8').toString().split('\n');
 
-
 describe('git_test ', function() {
-	this.timeout(120*1000);
+	before(async () => {
+		const db = new SqliteDb();
+		await db.dropAllTables();
+		await db.createAllTables();
+	});
+	this.timeout(120*20000);
 
 	let id = 0;
 	fs.readdirSync(testFolder).sort().forEach(file => {
@@ -55,6 +60,7 @@ describe('git_test ', function() {
 							.set(eve.request.headers)
 							.send(eve.request.body)
 							.then((res) => {
+								//console.log(res.status);
 								return res;
 							}).catch((err) => {
 								return err;
