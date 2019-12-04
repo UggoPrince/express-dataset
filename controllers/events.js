@@ -55,9 +55,9 @@ const getByActor = async (req, res) => {
 };
 
 
-var eraseEvents = (req, res) => {
-	const events = eventsServices.deleteAllEvents();
-	res.status(200).send(eventArr);
+const eraseEvents = async (req, res) => {
+	const events = await eventsServices.deleteAllEvents();
+	res.status(200).send({});
 };
 
 module.exports = {
