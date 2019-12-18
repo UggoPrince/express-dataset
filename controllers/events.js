@@ -3,14 +3,14 @@ const actorsServices = require('../services/ActorsServices');
 const reposServices = require('../services/ReposServices');
 
 const getAllEvents = async (req, res) => {
-	let events = await eventsServices.getEvents();
-	for (let i = 0; i < events.length; i++) {
-		const {eventId, type, actorId, repoId, created_at, login, avatar_url, name, url} = events[i];
-		const actorObj = {id: actorId, login, avatar_url:avatar_url};
-		const repoObj = {id: repoId, name: name, url: url};
-		events[i] = {id: eventId, type, actor: actorObj, repo: repoObj, created_at: created_at};
+	let {E, A, R} = await eventsServices.getEvents();
+	for (let i = 0; i < E.length; i++) {
+		const {id, type, created_at} = E[i];
+		const actorObj = {id: A[i].id, login: A[i].login, avatar_url: A[i].avatar_url};
+		const repoObj = {id: R[i].id, name: R[i].name, url: R[i].url};
+		E[i] = {id, type, actor: actorObj, repo: repoObj, created_at};
 	}
-	res.status(200).send(events);
+	res.status(200).json(E);
 };
 
 const addEvent = async (req, res) => {
@@ -57,6 +57,8 @@ const getByActor = async (req, res) => {
 
 const eraseEvents = async (req, res) => {
 	const events = await eventsServices.deleteAllEvents();
+	const actors = await actorsServices.deleteAllActors();
+	await reposServices.deleteAllRepos();
 	res.status(200).send({});
 };
 

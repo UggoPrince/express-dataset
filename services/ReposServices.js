@@ -14,6 +14,19 @@ class ReposServices {
             });
         return repo;
     }
+
+    async deleteAllRepos() {
+        const queryStr = `DELETE FROM repos`;
+        const db = new Sqlite3Db();
+        const event = await db.query(queryStr, [])
+            .then((result) => {
+                return result;
+            }).catch((err) => {
+                return err;
+            });
+        db.db.close();
+        return event;
+    }
 }
 
 module.exports = new ReposServices();

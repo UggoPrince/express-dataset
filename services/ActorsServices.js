@@ -30,7 +30,10 @@ class ActorsServices {
     }
 
     async getActorsByStreak() {
-        const queryStr = `SELECT * FROM actors`;
+        const queryStr = `SELECT actors.id, actors.login, actors.avatar_url, COUNT(events.actorId) AS cnt FROM events
+            INNER JOIN actors ON events.actorId = actors.id
+            GROUP BY actorId
+            ORDER BY COUNT(events.actorId) DESC, created_at DESC`;
         const db = new Sqlite3Db();
         const actor = await db.getAll(queryStr, [])
             .then((result) => {
@@ -43,10 +46,10 @@ class ActorsServices {
     }
 
     async getActorsByTotalEvents() {
-        const queryStr = `SELECT actors.id, actors.login, actors.avatar_url, COUNT(actorId) AS cnt FROM events 
+        const queryStr = `SELECT actors.id, actors.login, actors.avatar_url, COUNT(*) AS cnt FROM events 
             INNER JOIN actors ON events.actorId = actors.id
             GROUP BY actorId
-            ORDER BY cnt DESC`;
+            ORDER BY COUNT(*) DESC, created_at DESC, login DESC`;
         const db = new Sqlite3Db();
         const actor = await db.getAll(queryStr, [])
             .then((result) => {
@@ -69,6 +72,19 @@ class ActorsServices {
             });
         db.db.close();
         return actor;
+    }
+
+    async deleteAllActors() {
+        const queryStr = `DELETE FROM actors`;
+        const db = new Sqlite3Db();
+        const event = await db.query(queryStr, [])
+            .then((result) => {
+                return result;
+            }).catch((err) => {
+                return err;
+            });
+        db.db.close();
+        return event;
     }
 }
 

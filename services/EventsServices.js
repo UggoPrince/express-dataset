@@ -32,7 +32,7 @@ class ReposServices {
 
     async getEventsByActorId(id) {
         const queryStr = `SELECT events.id as eventId, type, actors.id as actorId, actors.login, actors.avatar_url, 
-            repos.id as repoId, repos.name, repos.url FROM events 
+            repos.id as repoId, repos.name, repos.url, events.created_at FROM events 
             INNER JOIN actors ON events.actorId = actors.id
             INNER JOIN repos ON events.repoId = repos.id
             WHERE actorId = ?`;
@@ -48,19 +48,36 @@ class ReposServices {
     }
 
     async getEvents() {
-        const queryStr = `SELECT events.id as eventId, type, actors.id as actorId, actors.login, actors.avatar_url, 
-            repos.id as repoId, repos.name, repos.url FROM events 
-            INNER JOIN actors ON events.actorId = actors.id
-            INNER JOIN repos ON events.repoId = repos.id`;
+        const queryStr = `SELECT * FROM events`;
+        const queryStr2 = `SELECT * FROM actors WHERE id = ?`;
+        const queryStr3 = `SELECT * FROM repos WHERE id = ?`;
+
         const db = new Sqlite3Db();
-        const event = await db.getAll(queryStr, [])
+        const events = await db.getAll(queryStr, [])
             .then((result) => {
                 return result;
             }).catch((err) => {
                 return err;
             });
+        let actors = [];
+        let repos = [];
+        for (let i = 0; i < events.length; i++) {
+            actors[i] = await db.getById(queryStr2, [events[i].actorId])
+            .then((result) => {
+                return result;
+            }).catch((err) => {
+                return err;
+            });
+            repos[i] = await db.getById(queryStr3, [events[i].repoId])
+            .then((result) => {
+                return result;
+            }).catch((err) => {
+                return err;
+            });
+        }   
+        
         db.db.close();
-        return event;
+        return {E: events, A: actors, R: repos};
     }
 
     async deleteAllEvents() {
